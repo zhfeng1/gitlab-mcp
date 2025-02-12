@@ -23,7 +23,7 @@ MIT License
 
 ## How to use
 
-## Using with Claude App
+## Using with Claude App, Cline, Roo Code
 
 When using with the Claude App, you need to set up your API key and URLs directly.
 
@@ -31,8 +31,8 @@ When using with the Claude App, you need to set up your API key and URLs directl
 {
   "mcpServers": {
     "GitLab communication server": {
-      "command": "npx @zereight/mcp-gitlab",
-      "args": [],
+      "command": "npx",
+      "args": ["-y", "@zereight/mcp-gitlab"],
       "env": {
         "GITLAB_PERSONAL_ACCESS_TOKEN": "your_gitlab_token",
         "GITLAB_API_URL": "your_gitlab_api_url"
