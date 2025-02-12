@@ -1,9 +1,20 @@
 # @zereight/mcp-gitlab
 
+[![smithery badge](https://smithery.ai/badge/@zereight/gitlab-mcp)](https://smithery.ai/server/@zereight/gitlab-mcp)
+
 GitLab MCP(Model Context Protocol) Server.
 
 ## Installation and Execution
 
+### Installing via Smithery
+
+To install GitLab MCP Server for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@zereight/gitlab-mcp):
+
+```bash
+npx -y @smithery/cli install @zereight/gitlab-mcp --client claude
+```
+
+### Manual Installation
 ```bash
 npx @zereight/mcp-gitlab
 ```
