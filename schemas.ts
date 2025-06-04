@@ -1010,6 +1010,17 @@ export const ListMergeRequestsSchema = z.object({
   with_labels_details: z.boolean().optional().describe("Return more details for each label"),
 }).merge(PaginationOptionsSchema);
 
+// 新增：合并Merge Request的schema
+export const MergeMergeRequestSchema = z.object({
+  project_id: z.string().describe("Project ID or URL-encoded path"),
+  merge_request_iid: z.number().describe("The IID of the merge request to merge"),
+  merge_commit_message: z.string().optional().describe("Custom merge commit message"),
+  squash_commit_message: z.string().optional().describe("Custom squash commit message"),
+  should_remove_source_branch: z.boolean().optional().describe("Remove source branch when merged"),
+  squash: z.boolean().optional().describe("Squash commits when merging"),
+  sha: z.string().optional().describe("SHA that must match the HEAD of the source branch"),
+});
+
 export const GetIssueSchema = z.object({
   project_id: z.string().describe("Project ID or URL-encoded path"),
   issue_iid: z.number().describe("The internal ID of the project issue"),

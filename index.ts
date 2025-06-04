@@ -172,6 +172,7 @@ import {
   GitLabCompareResultSchema,
   GetBranchDiffsSchema,
   ListWikiPagesOptions,
+  MergeMergeRequestSchema,
 } from "./schemas.js";
 
 /**
@@ -591,6 +592,11 @@ const allTools = [
     name: "get_users",
     description: "Get GitLab user details by usernames",
     inputSchema: zodToJsonSchema(GetUsersSchema),
+  },
+  {
+    name: "merge_merge_request",
+    description: "Merge a merge request in a GitLab project",
+    inputSchema: zodToJsonSchema(MergeMergeRequestSchema),
   },
 ];
 
@@ -3014,6 +3020,48 @@ async function getUsers(usernames: string[]): Promise<GitLabUsersResponse> {
   return GitLabUsersResponseSchema.parse(users);
 }
 
+/**
+ * Merge a merge request
+ * 合并一个Merge Request
+ *
+ * @param {string} projectId - The ID or URL-encoded path of the project
+ * @param {number} mergeRequestIid - The IID of the merge request
+ * @param {Object} options - Merge options
+ * @returns {Promise<any>} The merge result
+ */
+async function mergeMergeRequest(
+  projectId: string,
+  mergeRequestIid: number,
+  options: {
+    merge_commit_message?: string;
+    squash_commit_message?: string;
+    should_remove_source_branch?: boolean;
+    squash?: boolean;
+    sha?: string;
+  } = {}
+): Promise<any> {
+  projectId = decodeURIComponent(projectId);
+  const url = new URL(
+    `${GITLAB_API_URL}/projects/${encodeURIComponent(projectId)}/merge_requests/${mergeRequestIid}/merge`
+  );
+
+  const body: Record<string, any> = {};
+  if (options.merge_commit_message !== undefined) body.merge_commit_message = options.merge_commit_message;
+  if (options.squash_commit_message !== undefined) body.squash_commit_message = options.squash_commit_message;
+  if (options.should_remove_source_branch !== undefined) body.should_remove_source_branch = options.should_remove_source_branch;
+  if (options.squash !== undefined) body.squash = options.squash;
+  if (options.sha !== undefined) body.sha = options.sha;
+
+  const response = await fetch(url.toString(), {
+    ...DEFAULT_FETCH_CONFIG,
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
+
+  await handleGitLabError(response);
+  return await response.json();
+}
+
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   // Apply read-only filter first
   const tools0 = GITLAB_READ_ONLY_MODE
@@ -3915,6 +3963,35 @@ server.setRequestHandler(CallToolRequestSchema, async request => {
             },
           ],
         };
+      }
+
+      case "merge_merge_request": {
+        try {
+          const args = MergeMergeRequestSchema.parse(request.params.arguments);
+          const result = await mergeMergeRequest(
+            args.project_id,
+            args.merge_request_iid,
+            {
+              merge_commit_message: args.merge_commit_message,
+              squash_commit_message: args.squash_commit_message,
+              should_remove_source_branch: args.should_remove_source_branch,
+              squash: args.squash,
+              sha: args.sha,
+            }
+          );
+          return {
+            content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
+          };
+        } catch (error) {
+          return {
+            content: [
+              {
+                type: "text",
+                text: JSON.stringify({ error: error instanceof Error ? error.message : String(error) }, null, 2),
+              },
+            ],
+          };
+        }
       }
 
       default:
